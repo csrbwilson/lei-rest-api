@@ -1,0 +1,55 @@
+from datetime import datetime
+from flask_restful import Resource, reqparse
+from models.user_model import UserModel
+
+
+class UserRegister(Resource):
+
+    parser = reqparse.RequestParser()
+    parser.add_argument('username',
+                        type=str,
+                        required=True,
+                        help="Thise field is required!"
+                        )
+    parser.add_argument('password',
+                        type=str,
+                        required=True,
+                        help="Thise field is required!"
+                        )
+    parser.add_argument('email',
+                        type=str,
+                        required=True,
+                        help="Thise field is required!"
+                        )
+    parser.add_argument('first_name',
+                        type=str,
+                        required=True,
+                        help="Thise field is required!"
+                        )
+    parser.add_argument('last_name',
+                        type=str,
+                        required=True,
+                        help="Thise field is required!"
+                        )
+    parser.add_argument('enabled',
+                        type=str,
+                        required=True,
+                        help="Thise field is required!"
+                        )
+
+    def post(self):
+        data = UserRegister.parser.parse_args()
+
+        if UserModel.find_by_username(data['username']):
+            return {'message': "User '{}' already exists!".format(data['username'])}, 400
+        else:
+            created_date = datetime.now()
+
+        user = UserModel(**data)
+        if created_date:
+            user.created_date = created_date
+        user.modified_date = datetime.now()
+        user.save_to_db()
+
+        return {'message': 'User created successfully.'}, 201
+
